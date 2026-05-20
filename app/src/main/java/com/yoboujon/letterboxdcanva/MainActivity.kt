@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -11,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,11 +34,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalFocusManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -52,29 +55,35 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     var selectedItem by remember { mutableStateOf(0) }
-
-    val items: List<Triple<String, androidx.compose.ui.graphics.vector.ImageVector, String>> = listOf(
-        Triple("Home", Icons.Default.Home, "home"),
-        Triple("Create", Icons.Default.Add, "create"),
-        Triple("Profile", Icons.Default.Person, "profile")
+    val items: List<Triple<String, Int, String>> = listOf(
+        Triple("User", R.drawable.person_24px, "user"),
+        Triple("Create", R.drawable.wall_art_24px, "create"),
     )
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(Unit) {
+            detectTapGestures(onTap = {
+                focusManager.clearFocus()
+            })
+        },
         bottomBar = {
             NavigationBar {
                 items.forEachIndexed { index, (label, icon, _) ->
                     NavigationBarItem(
-                        icon = { Icon(icon, contentDescription = label) },
+                        icon = { Icon(painterResource(icon), contentDescription = label) },
                         label = { Text(label) },
                         selected = selectedItem == index,
-                        onClick = { selectedItem = index }
+                        onClick = { selectedItem = index },
+                        enabled = (label == "User")
                     )
                 }
             }
         }
     ) { innerPadding ->
-        Greeting(
+        UserPage(
             name = "Android",
             modifier = Modifier.padding(innerPadding)
         )
@@ -82,29 +91,21 @@ fun MainScreen() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Surface(color = Color.Cyan, modifier = modifier.padding(12.dp).fillMaxWidth()) {
-        Column{
+fun UserPage(name: String, modifier: Modifier = Modifier) {
+    Surface(modifier = modifier.padding(12.dp).fillMaxWidth()) {
+        Column {
             Text(
-                text = "Hello $name!",
-                color = Color.Black
-            )
-            Text(
-                text = "This is code text hihi",
+                text = "Letterboxd Canva",
                 fontWeight = FontWeight.Bold,
-                fontSize = 10.sp,
-                fontFamily = FontFamily.Monospace,
-                color = Color.Black
+                fontSize = 35.sp,
+                modifier = modifier.align(Alignment.CenterHorizontally)
             )
-
+            OutlinedTextField(
+                state = rememberTextFieldState(),
+                label = { Text("Username") },
+                modifier = modifier.align(Alignment.CenterHorizontally),
+                shape = RoundedCornerShape(50.dp)
+            )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    LetterboxdCanvaTheme {
-        Greeting("Android")
     }
 }
